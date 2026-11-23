@@ -1,0 +1,11 @@
+{
+  "layout:cozy-office": {
+    "ctrl-alt-p": "cozy-office.toggle",
+    "cmd-=": "cozy-office.font_in",
+    "cmd-+": "cozy-office.font_in",
+    "cmd--": "cozy-office.font_out",
+    "cmd-0": "cozy-office.font_reset",
+    "cmd-[": "cozy-office.back",
+    "cmd-]": "cozy-office.forward"
+  }
+}
