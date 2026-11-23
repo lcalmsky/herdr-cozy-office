@@ -40,17 +40,16 @@ const SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 // Herdr has no API for a mod's own folder; the app home is where Herdr keeps mods.
 const cca = () => `${appHome()}/mods/cozy-accounts/cca`;
 
-// The command a resumed or new session starts with, editable in the popup. It lives next to cca's
-// state so every copy of this mod (rail, popup, add form) reads the same value.
-const LAUNCH_FILE = '"${XDG_STATE_HOME:-$HOME/.local/state}/herdr-tower/cozy-launch"';
 const MODELS_FILE = '"${XDG_STATE_HOME:-$HOME/.local/state}/herdr-tower/models.json"';
 const DEFAULT_LAUNCH = "claude";
 const shellQuote = (s) => `'${s.replace(/'/g, "'\\''")}'`;
 
+// The command a resumed or new session starts with, editable in the popup. cca keeps it
+// (`cca launch`, `cca launch set`), so every copy of this mod and every layout reads the same value.
 async function readLaunch() {
   try {
-    const r = await exec("sh", ["-c", `cat ${LAUNCH_FILE} 2>/dev/null`]);
-    return (r?.stdout ?? "").trim() || DEFAULT_LAUNCH;
+    const r = await exec("sh", [cca(), "launch"]);
+    return r?.code === 0 ? (r.stdout ?? "").trim() || DEFAULT_LAUNCH : DEFAULT_LAUNCH;
   } catch {
     return DEFAULT_LAUNCH;
   }
@@ -903,7 +902,7 @@ export default class ClaudeAccounts extends View {
     cx.spawn(async (cx) => {
       let res = null;
       try {
-        res = await exec("sh", ["-c", `f=${LAUNCH_FILE}; mkdir -p "$(dirname "$f")" && printf '%s\\n' "$1" > "$f"`, "x", value]);
+        res = await exec("sh", [cca(), "launch", "set", value]);
       } catch {}
       this.savingLaunch = false;
       if (!res || res.code !== 0) {

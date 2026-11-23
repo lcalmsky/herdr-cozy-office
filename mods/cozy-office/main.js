@@ -938,6 +938,16 @@ export default class CozyOffice extends View {
     }
   }
 
+  // Whether a finished session was looked at. Herdr answers for any terminal it has a status for:
+  // "done" until someone looks at that terminal on any client, then "idle", the same word other
+  // layouts show. The local list answers only for sessions Herdr has no status for.
+  viewedOf(ackKey, terminal, list = agents()) {
+    const status = terminal ? list.find((entry) => entry.address === terminal)?.status : null;
+    if (status === "done") return false;
+    if (status === "idle") return true;
+    return this.viewed.includes(ackKey);
+  }
+
   saveViewed() {
     setShared(VIEWED_SHARED, this.viewed);
     try {
@@ -1088,7 +1098,7 @@ export default class CozyOffice extends View {
         where: { kind: "herdr", terminalId: a.address },
         terminal: a.address,
         ackKey,
-        viewed: this.viewed.includes(ackKey),
+        viewed: this.viewedOf(ackKey, a.address, list),
         badge: "herdr",
         charKey: a.address,
       });
@@ -1240,7 +1250,7 @@ export default class CozyOffice extends View {
         pages,
         where: raw.where ?? {},
         ackKey,
-        viewed: this.viewed.includes(ackKey),
+        viewed: this.viewedOf(ackKey, terminal?.address ?? null),
         badge: BADGES[raw.where?.kind] ?? null,
         terminal: terminal?.address ?? null,
         charKey: terminal?.address ?? raw.sessionId,
